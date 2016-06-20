@@ -79,7 +79,8 @@ function cwp_edd_sl_get_downloads_by_licensed_user( $user_id = null, $names_only
 							'activations' => $activations,
 							'at_limit'    => $at_limit,
 							'unlimited'   => $unlimited,
-							'limit'       => $limit
+							'limit'       => $limit,
+							'license'     => $license_id
 						];
 					}
 				}
