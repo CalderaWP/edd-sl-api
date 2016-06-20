@@ -99,7 +99,13 @@ class CWP_EDD_SL_API_Route {
 	 * @return mixed|WP_REST_Response
 	 */
 	public function get_licenses( WP_REST_Request $request ){
-		$licenses = cwp_edd_sl_get_downloads_by_licensed_user( get_current_user_id(), $request[ 'return' ] );
+		if( 'full' ==  $request[ 'return' ] ){
+			$names_only = false;
+		}else{
+			$names_only = true;
+		}
+
+		$licenses = cwp_edd_sl_get_downloads_by_licensed_user( get_current_user_id(), $names_only );
 		if( ! empty( $licenses ) ){
 			return rest_ensure_response( $licenses );
 		}else{

@@ -24,6 +24,7 @@
  */
 
 add_action( 'rest_api_init', function(){
+	include __DIR__ . '/CWP_EDD_SL_API_Route.php';
 	new CWP_EDD_SL_API_Route();
 });
 
@@ -47,25 +48,38 @@ function cwp_edd_sl_get_downloads_by_licensed_user( $user_id = null, $names_only
 		$licenses = $wpdb->get_results( $query, ARRAY_A );
 		if ( ! empty( $licenses ) ) {
 			foreach( $licenses as $license ) {
+				$license_id = $license[ 'post_id' ];
 				if ( false == $include_expired ) {
-					$status = get_post_meta( $license[ 'post_id' ], '_edd_sl_status', true );
+					
+					$status = get_post_meta( $license_id, '_edd_sl_status', true );
 					if ( false ==  $status ) {
 						continue;
 					}
 				}
 
-				$id = get_post_meta( $license[ 'post_id' ], '_edd_sl_download_id', true );
+				$download_id = get_post_meta( $license[ 'post_id' ], '_edd_sl_download_id', true );
 
-				if ( $id ) {
+				if ( $download_id ) {
 					if ( $names_only ) {
-						$licensed_downloads[ $id ] = get_the_title( $id );
+						$licensed_downloads[ $download_id ] = get_the_title( $download_id );
 					}else{
-						$licensed_downloads[ $id ] = [
-							'download' => get_post( $id ),
-							'code' => get_post_meta( $license[ 'post_id' ],  '_edd_sl_key', true ),
-							'sites' => get_post_meta( $license[ 'post_id' ],  '_edd_sl_sites', true ),
-							'code_id'  => $license[ 'post_id' ],
+						$activations = EDD_Software_Licensing::instance()->get_site_count( $license_id );
+						$at_limit = EDD_Software_Licensing::instance()->is_at_limit( $license_id, $download_id );
+						$sites = EDD_Software_Licensing::instance()->get_sites( $license_id );
+						$unlimited = EDD_Software_Licensing::instance()->is_lifetime_license( $license_id );
+						$limit = EDD_Software_Licensing::instance()->get_license_limit( $download_id, $license_id );
+						$code = EDD_Software_Licensing::instance()->get_license_key( $license_id );
 
+						$licensed_downloads[ $download_id ] = [
+							'title'       => get_the_title( $download_id ),
+							'download'    => $download_id,
+							'slug'        => get_post( $download_id )->post_name,
+							'code'        => $code,
+							'sites'       => $sites,
+							'activations' => $activations,
+							'at_limit'    => $at_limit,
+							'unlimited'   => $unlimited,
+							'limit'       => $limit
 						];
 					}
 				}
