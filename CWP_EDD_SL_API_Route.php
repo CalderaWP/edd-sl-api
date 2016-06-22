@@ -90,7 +90,6 @@ class CWP_EDD_SL_API_Route {
 	 * @return bool
 	 */
 	public function permissions(){
-		return true;
 		return is_user_logged_in();
 	}
 
@@ -134,7 +133,7 @@ class CWP_EDD_SL_API_Route {
 	 */
 	public function update_license( WP_REST_Request $request ){
 		if( 0 == get_current_user_id() ) {
-			//return $this->return_error( 403, 'You must be logged in' );
+			return $this->return_error( 403, 'You must be logged in' );
 		}
 
 		$sl = EDD_Software_Licensing::instance();
