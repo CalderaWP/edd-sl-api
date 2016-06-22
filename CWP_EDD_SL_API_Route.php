@@ -285,6 +285,15 @@ class CWP_EDD_SL_API_Route {
 		return $this->return_error( 501 , __( 'Not implemented', 'cwp-edd-sl-api') );
 	}
 
+	/**
+	 * Decode and esc url
+	 * 
+	 * @since 0.1.0
+	 * 
+	 * @param string $url URL to prepare
+	 *
+	 * @return string
+	 */
 	public function prepare_url( $url ){
 		return esc_url_raw( urldecode( $url ) );
 	}
