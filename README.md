@@ -40,8 +40,19 @@ ID is ID of license code, not the license code.
         * `url` - URL of site license is being activated on
         * `action` - Either `activate` or `deactivate`
     * Returns:
-            * ??
+            * Uses EDD_Software_Licensing::activate_license() return is the same.
+            * example return object:
+                ```
+                    {
+                        "success": true
+                        "license_limit": "1"
+                        "site_count": 1
+                        "expires": "1466644121"
+                        "activations_left": 0
+                    }
+                ```
 * GET - View license info for a specific license
+    * <strong> not implemented </strong>
     * Required arguments
         * `download` - ID of download
     * Returns:
@@ -51,10 +62,13 @@ ID is ID of license code, not the license code.
 ID is ID of license code, not the license code.
 
 * GET get download file for license
-        * Required arguments
-            * `download` - ID of download
-        * Returns:
-            * ??
+    * Site must have already been activated or an error will happen.
+    * Required arguments
+        * `download` - ID of download
+        * `url` - URL of site with license activated for that site
+    * Returns:
+        * Array with one key `link` that has the download link.
+        * NOTE: This is the secured EDD link and is subject to same expiration limits.
 
 
 

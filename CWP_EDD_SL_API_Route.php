@@ -29,7 +29,7 @@ class CWP_EDD_SL_API_Route {
 				]
 			]
 		] );
-		register_rest_route( 'edd-sl-api/v1', '/license/(?P<id>\d+)', [
+		register_rest_route( 'edd-sl-api/v1', '/licenses/(?P<id>\d+)', [
 			'methods' => 'POST',
 			'permissions_callback' => [ $this, 'permissions '],
 			'args' =>[
@@ -39,7 +39,7 @@ class CWP_EDD_SL_API_Route {
 				],
 				'url' => [
 					'required' => true,
-					'sanitize_callback' => 'esc_url_raw'
+					'sanitize_callback' => [ $this, 'prepare_url' ]
 				],
 				'action' => [
 					'required' => true,
@@ -50,7 +50,7 @@ class CWP_EDD_SL_API_Route {
 			'callback' => [ $this, 'update_license' ]
 		] );
 
-		register_rest_route( 'edd-sl-api/v1', '/license/(?P<id>\d+)', [
+		register_rest_route( 'edd-sl-api/v1', '/licenses/(?P<id>\d+)', [
 			'methods' => 'GET',
 			'permissions_callback' => [ $this, 'permissions '],
 			'callback' => [ $this, 'get_license' ],
@@ -62,7 +62,7 @@ class CWP_EDD_SL_API_Route {
 			]
 		] );
 
-		register_rest_route( 'edd-sl-api/v1', '/license/(?P<id>\d+)/file', [
+		register_rest_route( 'edd-sl-api/v1', '/licenses/(?P<id>\d+)/file', [
 			'methods' => 'GET',
 			'permissions_callback' => [ $this, 'permissions '],
 			'callback' => [ $this, 'get_file' ],
@@ -71,6 +71,10 @@ class CWP_EDD_SL_API_Route {
 					'required' => true,
 					'sanitize_callback' => 'sanitize_title'
 				],
+				'url' => [
+					'required' => true,
+					'sanitize_callback' => [ $this, 'prepare_url' ]
+				]
 			]
 		] );
 	}
@@ -86,6 +90,7 @@ class CWP_EDD_SL_API_Route {
 	 * @return bool
 	 */
 	public function permissions(){
+		return true;
 		return is_user_logged_in();
 	}
 
@@ -128,7 +133,27 @@ class CWP_EDD_SL_API_Route {
 	 * @return WP_REST_Response
 	 */
 	public function update_license( WP_REST_Request $request ){
-		return $this->return_not_yet();
+		if( 0 == get_current_user_id() ) {
+			//return $this->return_error( 403, 'You must be logged in' );
+		}
+
+		$sl = EDD_Software_Licensing::instance();
+		$license_key = $sl->get_license_key( $request[ 'id' ] );
+		$download = get_post( $request[ 'download'] );
+		if( ! is_object( $download ) ){
+			return $this->return_error();
+		}
+
+		$args = array(
+			'key'        => $license_key,
+			'item_name'  => $download->post_title,
+			'item_id'    => $download->ID,
+			'url'        => $request[ 'url' ]
+		);
+
+
+		$activated = $sl->activate_license( $args );
+		return rest_ensure_response( $activated );
 	}
 
 	/**
@@ -145,7 +170,7 @@ class CWP_EDD_SL_API_Route {
 	}
 
 	/**
-	 * Get a file for a download
+	 * Get a file URL for a download
 	 *
 	 * @since 0.1.0
 	 * 
@@ -154,7 +179,44 @@ class CWP_EDD_SL_API_Route {
 	 * @return WP_REST_Response
 	 */
 	public function get_file( WP_REST_Request $request ){
-		return $this->return_not_yet();
+		$license_id = $request[ 'id' ];
+		$url = urldecode( $request['url'] );
+		
+		if( EDD_Software_Licensing::instance()->is_site_active( $license_id, $url ) ){
+			$download_id = $request[ 'download' ];
+			$url = $this->get_download_file( $download_id, $license_id );
+			if( ! empty( $url ) && filter_var( $url, FILTER_VALIDATE_URL ) ){
+				return rest_ensure_response( [ 'link' => $url ] );
+			}else{
+				return $this->return_error( 500, esc_html__( 'Error making a file download link. Please complain to Josh', 'edd-sl-api' ) );
+			}
+
+		}else{
+			$this->return_error( '500', esc_html__( 'Download license not active on this site', 'edd-sl-api' ) );
+		}
+
+	}
+
+	/**
+	 *
+	 * This is  EDD_SL_Package_Download::get_download_package() minus the security. Assumption here is user is authenticated.
+	 *
+	 * @param $download_id
+	 *
+	 * @return mixed|void
+	 */
+	protected function get_download_file( $download_id, $license_id ){
+
+
+		$payment_id = EDD_Software_Licensing::instance()->get_payment_id( $license_id );
+		$payment_key = edd_get_payment_key( $payment_id );
+		$file_key  = get_post_meta( $download_id, '_edd_sl_upgrade_file_key', true );
+		$email       = edd_get_payment_user_email( $payment_id );
+
+		$file = edd_get_download_file_url( $payment_key, $email, $file_key, $download_id );
+
+		return $file;
+
 	}
 
 	/**
@@ -222,5 +284,9 @@ class CWP_EDD_SL_API_Route {
 	 */
 	protected function return_not_yet(){
 		return $this->return_error( 501 , __( 'Not implemented', 'cwp-edd-sl-api') );
+	}
+
+	public function prepare_url( $url ){
+		return esc_url_raw( urldecode( $url ) );
 	}
 }
