@@ -150,9 +150,14 @@ class CWP_EDD_SL_API_Route {
 			'url'        => $request[ 'url' ]
 		);
 
+		if ( 'activate' == $request[ 'action'] ) {
+			$result = $sl->activate_license( $args );
+		} else {
+			$result = $sl->deactivate_license( $args );
+		}
 
-		$activated = $sl->activate_license( $args );
-		return rest_ensure_response( $activated );
+		return rest_ensure_response( $result );
+
 	}
 
 	/**
