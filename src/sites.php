@@ -68,16 +68,35 @@ class sites {
 		return current_user_can( 'manage_options' );
 	}
 
+	/**
+	 * Get all sites
+	 *
+	 * @return mixed
+	 */
 	public function get_all(){
 		return rest_ensure_response( $this->queries->get_all() );
 	}
 
+	/**
+	 * Get all sites by download
+	 *
+	 * @param \WP_REST_Request $request
+	 *
+	 * @return mixed
+	 */
 	public function get_by_download( \WP_REST_Request $request ){
 		return rest_ensure_response( $this->get_by_download( absint( $request[ 'id' ] )) );
 	}
 
+	/**
+	 * Get all sites by user
+	 *
+	 * @param \WP_REST_Request $request
+	 *
+	 * @return mixed
+	 */
 	public function get_user_sites( \WP_REST_Request $request ){
-		return rest_ensure_response( $this->get_user_sites( absint( $request[ 'id' ] )) );
+		return rest_ensure_response( $this->queries->get_user_sites( absint( $request[ 'id' ] )) );
 
 	}
 
