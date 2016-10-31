@@ -85,7 +85,7 @@ class sites {
 	 * @return mixed
 	 */
 	public function get_by_download( \WP_REST_Request $request ){
-		return rest_ensure_response( $this->get_by_download( absint( $request[ 'id' ] )) );
+		return rest_ensure_response( $this->queries->get_by_download( absint( $request[ 'id' ] )) );
 	}
 
 	/**
