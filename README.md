@@ -8,8 +8,10 @@ Note: All routes require authentication through WordPress. I recommend using [JW
 <strong>Requires PHP 7.0 or later</strong>
 
 
-## Routes
-<em>This documentation is fairly aspirational at this point</em>
+# Routes
+
+## Licenses 
+By license ID for getting and using licenses;
 
 ### `/licenses`
 
@@ -71,6 +73,19 @@ ID is ID of license code, not the license code.
         * NOTE: This is the secured EDD link and is subject to same expiration limits.
 
 
+## Sites 
+Get sites with licenses activated
+* Makes use of our [EDD SL Queries Library](https://github.com/CalderaWP/edd-sl-queries)
+
+
+### `sites`
+GET All sites with an active license for any download
+
+### `sites/user/<id>`
+GET All sites that a user has a license of any download active on.
+
+### `sites/download/<id>`
+GET All sites that a download has an activated license on.
 
 ### Copyright/ License
 Copyright 2016 Josh Pollock & CalderaWP LLC. Licensed under the terms of the GNU GPL v2 or later.
