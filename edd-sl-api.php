@@ -24,8 +24,9 @@
  */
 
 add_action( 'rest_api_init', function(){
-	include __DIR__ . '/CWP_EDD_SL_API_Route.php';
-	new CWP_EDD_SL_API_Route();
+	include __DIR__ . '/vendor/autoload.php';
+	new \CalderaWP\EDD\SLAPI\route();
+	new \CalderaWP\EDD\SLAPI\sites( new \CalderaWP\EDD\SL\sites() );
 });
 
 /**

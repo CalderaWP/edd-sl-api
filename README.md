@@ -5,7 +5,7 @@ Provides a RESTful API, using the WordPress REST API for managing Easy Digital D
 
 Note: All routes require authentication through WordPress. I recommend using [JWT](https://wordpress.org/plugins/jwt-authentication-for-wp-rest-api/), which is easy and is as secure as wp-login (IE fairly secure if using HTTPS and you are using fail2ban or something.)
 
-<strong>Under development</strong> Might break shit.
+<strong>Requires PHP 7.0 or later</strong>
 
 
 ## Routes

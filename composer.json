@@ -1,4 +1,19 @@
 {
   "name": "calderawp/edd-sl-api",
-  "type": "wordpress-plugin"
+  "type": "wordpress-plugin",
+  "repositories" : [
+    {
+      "type": "git",
+      "url" : "https://github.com/CalderaWP/edd-sl-queries"
+    }
+  ],
+  "require": {
+    "php": ">=7.0.0",
+    "CalderaWP/edd-sl-queries": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "\\CalderaWP\\EDD\\SLAPI\\": "src"
+    }
+  }
 }

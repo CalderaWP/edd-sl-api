@@ -1,10 +1,13 @@
 <?php
 
-class CWP_EDD_SL_API_Route {
 
+namespace CalderaWP\EDD\SLAPI;
+
+
+class route {
 
 	/**
-	 * CWP_EDD_SL_API_Route constructor.
+	 * route constructor.
 	 *
 	 * @since 0.1.0
 	 */
@@ -26,7 +29,18 @@ class CWP_EDD_SL_API_Route {
 				'return'=> [
 					'default' => 'names',
 					'validate_callback' => [ $this, 'validate_return_type' ]
-				]
+				],
+			]
+		] );
+		register_rest_route( 'edd-sl-api/v1', '/licenses/user/(?P<id>\d+)', [
+			'methods' => 'GET',
+			'permissions_callback' => [ $this, 'permissions '],
+			'callback' => [ $this, 'get_user_licenses' ],
+			'args' => [
+				'return'=> [
+					'default' => 'names',
+					'validate_callback' => [ $this, 'validate_return_type' ]
+				],
 			]
 		] );
 		register_rest_route( 'edd-sl-api/v1', '/licenses/(?P<id>\d+)', [
@@ -95,31 +109,60 @@ class CWP_EDD_SL_API_Route {
 
 	/**
 	 * Get licenses for logged in users
-	 * 
+	 *
 	 * @since 0.1.0
 	 *
-	 * @param WP_REST_Request $request
+	 * @param \WP_REST_Request $request
 	 *
-	 * @return mixed|WP_REST_Response
+	 * @return mixed|\WP_REST_Response
 	 */
-	public function get_licenses( WP_REST_Request $request ){
+	public function get_licenses( \WP_REST_Request $request ){
 		if( 0 == get_current_user_id() ) {
 			return $this->return_error( 403, 'You must be logged in' );
 		}
-		
-		if( 'full' ==  $request[ 'return' ] ){
+
+		if ( 'full' == $request[ 'return' ] ) {
 			$names_only = false;
-		}else{
+		} else {
 			$names_only = true;
 		}
 
-		$licenses = cwp_edd_sl_get_downloads_by_licensed_user( get_current_user_id(), $names_only );
+		$licenses = $this->get_license_by_user( get_current_user_id(), $names_only );
 		if( ! empty( $licenses ) ){
 			return rest_ensure_response( $licenses );
 		}else{
 			return $this->return_404();
 		}
-		
+
+	}
+
+	/**
+	 * Get licenses for a specific user
+	 *
+	 * @since 0.2.0
+	 *
+	 * @param \WP_REST_Request $request
+	 *
+	 * @return mixed|\WP_REST_Response
+	 */
+	public function get_user_licenses( \WP_REST_Request $request){
+		$user = get_user_by( 'ID', $request[ 'id'] );
+
+		if( ! empty( $user ) ) {
+			if ( 'full' == $request[ 'return' ] ) {
+				$names_only = false;
+			} else {
+				$names_only = true;
+			}
+
+			$licenses = $this->get_license_by_user( $user->ID, $names_only );
+			if ( ! empty( $licenses ) ) {
+				return rest_ensure_response( $licenses );
+			}
+		}
+
+		return $this->return_404();
+
 	}
 
 	/**
@@ -127,16 +170,16 @@ class CWP_EDD_SL_API_Route {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param WP_REST_Request $request
+	 * @param \WP_REST_Request $request
 	 *
-	 * @return WP_REST_Response
+	 * @return \WP_REST_Response
 	 */
-	public function update_license( WP_REST_Request $request ){
+	public function update_license( \WP_REST_Request $request ){
 		if( 0 == get_current_user_id() ) {
 			return $this->return_error( 403, 'You must be logged in' );
 		}
 
-		$sl = EDD_Software_Licensing::instance();
+		$sl = \EDD_Software_Licensing::instance();
 		$license_key = $sl->get_license_key( $request[ 'id' ] );
 		$download = get_post( $request[ 'download'] );
 		if( ! is_object( $download ) ){
@@ -161,15 +204,15 @@ class CWP_EDD_SL_API_Route {
 	}
 
 	/**
-	 * Get a license 
-	 * 
+	 * Get a license
+	 *
 	 * @since 0.1.0
 	 *
-	 * @param WP_REST_Request $request
+	 * @param \WP_REST_Request $request
 	 *
-	 * @return WP_REST_Response
+	 * @return \WP_REST_Response
 	 */
-	public function get_license( WP_REST_Request $request ){
+	public function get_license( \WP_REST_Request $request ){
 		return $this->return_not_yet();
 	}
 
@@ -177,16 +220,16 @@ class CWP_EDD_SL_API_Route {
 	 * Get a file URL for a download
 	 *
 	 * @since 0.1.0
-	 * 
-	 * @param WP_REST_Request $request
 	 *
-	 * @return WP_REST_Response
+	 * @param \WP_REST_Request $request
+	 *
+	 * @return \WP_REST_Response
 	 */
-	public function get_file( WP_REST_Request $request ){
+	public function get_file( \WP_REST_Request $request ){
 		$license_id = $request[ 'id' ];
 		$url = urldecode( $request['url'] );
-		
-		if( EDD_Software_Licensing::instance()->is_site_active( $license_id, $url ) ){
+
+		if( \EDD_Software_Licensing::instance()->is_site_active( $license_id, $url ) ){
 			$download_id = $request[ 'download' ];
 			$url = $this->get_download_file( $download_id, $license_id );
 			if( ! empty( $url ) && filter_var( $url, FILTER_VALIDATE_URL ) ){
@@ -212,7 +255,7 @@ class CWP_EDD_SL_API_Route {
 	protected function get_download_file( $download_id, $license_id ){
 
 
-		$payment_id = EDD_Software_Licensing::instance()->get_payment_id( $license_id );
+		$payment_id = \EDD_Software_Licensing::instance()->get_payment_id( $license_id );
 		$payment_key = edd_get_payment_key( $payment_id );
 		$file_key  = get_post_meta( $download_id, '_edd_sl_upgrade_file_key', true );
 		$email       = edd_get_payment_user_email( $payment_id );
@@ -225,9 +268,9 @@ class CWP_EDD_SL_API_Route {
 
 	/**
 	 * Validate return type for a license request
-	 * 
+	 *
 	 * @since 0.1.0
-	 * 
+	 *
 	 * @param $value
 	 *
 	 * @return bool
@@ -238,9 +281,9 @@ class CWP_EDD_SL_API_Route {
 
 	/**
 	 * Validate update action
-	 * 
+	 *
 	 * @since 0.1.0
-	 * 
+	 *
 	 * @param $value
 	 *
 	 * @return bool
@@ -257,10 +300,10 @@ class CWP_EDD_SL_API_Route {
 	 * @param int $code Optional. Status code. default is 500
 	 * @param mixed $data Optional. Data to return. Default is empty string.
 	 *
-	 * @return WP_REST_Response
+	 * @return \WP_REST_Response
 	 */
 	protected function return_error( $code = 500, $data = '' ){
-		$response = new WP_REST_Response( $data );
+		$response = new \WP_REST_Response( $data );
 		$response->set_status( $code );
 		return $response;
 
@@ -268,12 +311,12 @@ class CWP_EDD_SL_API_Route {
 
 	/**
 	 * Return a 404
-	 * 
+	 *
 	 * @since 0.1.0
 	 *
 	 * @param string $message Optional. Error message. Default is empty string.
-	 * 
-	 * @return WP_REST_Response
+	 *
+	 * @return \WP_REST_Response
 	 */
 	protected function return_404( $message = ''){
 		return $this->return_error( 404, $message );
@@ -281,10 +324,10 @@ class CWP_EDD_SL_API_Route {
 
 	/**
 	 * Return a not implemented response 501
-	 * 
+	 *
 	 * @since 0.1.0
-	 * 
-	 * @return WP_REST_Response
+	 *
+	 * @return \WP_REST_Response
 	 */
 	protected function return_not_yet(){
 		return $this->return_error( 501 , __( 'Not implemented', 'cwp-edd-sl-api') );
@@ -292,14 +335,22 @@ class CWP_EDD_SL_API_Route {
 
 	/**
 	 * Decode and esc url
-	 * 
+	 *
 	 * @since 0.1.0
-	 * 
+	 *
 	 * @param string $url URL to prepare
 	 *
 	 * @return string
 	 */
 	public function prepare_url( $url ){
 		return esc_url_raw( urldecode( $url ) );
+	}
+
+
+	protected function get_license_by_user( $id, $names_only ) {
+
+		$licenses = cwp_edd_sl_get_downloads_by_licensed_user( $id, $names_only );
+
+		return $licenses;
 	}
 }

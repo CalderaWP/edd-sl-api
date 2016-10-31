@@ -1,0 +1,56 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "69b8c1520af7b320a2687c7bf4898fa0",
+    "content-hash": "d6e84f9424cb8cac01a86886fd20459f",
+    "packages": [
+        {
+            "name": "calderawp/edd-sl-queries",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/CalderaWP/edd-sl-queries",
+                "reference": "bdf5cbfb906abd6eb04a0dc6deb95b6f60908636"
+            },
+            "require": {
+                "php": ">=7.0.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "\\CalderaWP\\EDD\\SL\\": "src"
+                }
+            },
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Josh Pollock",
+                    "homepage": "https://CalderaWP.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Useful queries for Easy Digital Downloads Software Licensing.",
+            "keywords": [
+                "wordpress"
+            ],
+            "time": "2016-10-31 01:56:30"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "calderawp/edd-sl-queries": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": ">=7.0.0"
+    },
+    "platform-dev": []
+}
