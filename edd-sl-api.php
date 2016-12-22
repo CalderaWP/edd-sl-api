@@ -25,9 +25,11 @@
 
 add_action( 'rest_api_init', function(){
 	//include __DIR__ . '/vendor/autoload.php';
+	require_once __DIR__ . '/vendor/calderawp/edd-sl-queries/src/file.php';
 	require_once  __DIR__ .'/src/route.php';
 	require_once __DIR__ .'/src/sites.php';
 	require_once __DIR__ . '/vendor/calderawp/edd-sl-queries/src/sites.php';
+	require_once __DIR__ . '/vendor/calderawp/edd-sl-queries/src/user.php';
 	new \CalderaWP\EDD\SLAPI\route();
 	new \CalderaWP\EDD\SLAPI\sites( new \CalderaWP\EDD\SL\sites() );
 });
